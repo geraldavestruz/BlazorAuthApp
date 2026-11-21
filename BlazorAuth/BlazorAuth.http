@@ -1,0 +1,14 @@
+﻿@BlazorAuth_HostAddress = https://localhost:7261
+
+### Register User
+POST {{BlazorAuth_HostAddress}}/account/user/register
+Content-Type: application/json
+
+{
+  "firstname" : "Jean",
+  "lastname" : "Tomines",
+  "password" : "123@test",
+  "role" : 1
+}
+
+###

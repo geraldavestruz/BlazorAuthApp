@@ -1,0 +1,32 @@
+﻿@page "/Account/Register"
+
+@rendermode InteractiveServer
+
+<div class="mx-auto w-[450px] rounded-md border border-gray-300">
+    <EditForm Model="@RegisterModel">
+        <div class="relative px-4 py-6">
+            <p class="mb-2 font-bold">First Name</p>
+            <InputText 
+                @bind-Value="RegisterModel.Firstname" 
+                typeof="text" placeholder="Firstname" 
+                       class="mb-4 w-full rounded-md border border-gray-300 px-4 py-4" />
+
+            <p class="mb-2 font-bold">Last Name</p>
+            <InputText @bind-Value="RegisterModel.Lastname"
+                       typeof="text" placeholder="Lastname"
+                       class="mb-4 w-full rounded-md border border-gray-300 px-4 py-4" />
+            
+            <p class="mb-2 font-bold">Password</p>
+            <InputText type="password" @bind-Value="RegisterModel.Lastname"
+                       typeof="text" placeholder="Password"
+                       class="mb-6 w-full rounded-md border border-gray-300 px-4 py-4" />
+
+            <button type="submit" class="w-full cursor-pointer rounded-md bg-violet-600 px-4 py-4 text-white">Register</button>
+        </div>
+    </EditForm>
+</div>
+
+@code
+{
+    public RegisterViewModel RegisterModel { get; set; } = new();
+}
