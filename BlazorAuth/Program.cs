@@ -1,4 +1,5 @@
 using BlazorAuth.Auth;
+using BlazorAuth.Auth.Interfaces;
 using BlazorAuth.Components;
 using BlazorAuth.Data;
 using BlazorAuth.Endpoints.Account;
@@ -9,7 +10,6 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +22,7 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddAntiforgery();
 builder.Services.AddHttpContextAccessor();
-//builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 
 builder.Services.AddResponseCompression(opt =>
     opt.EnableForHttps = true);
@@ -86,6 +86,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         };
     });
 
+//builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddBlazoredSessionStorage();
 
@@ -114,5 +115,6 @@ app.MapRazorComponents<App>()
 
 // - Map Endpoints
 app.MapRegisterEndpoint();
+app.MapLoginEndpoint();
 
 app.Run();

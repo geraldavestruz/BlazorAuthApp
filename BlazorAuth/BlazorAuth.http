@@ -11,4 +11,12 @@ Content-Type: application/json
   "role" : 1
 }
 
+### Login User
+POST {{BlazorAuth_HostAddress}}/account/user/login
+Content-Type: application/json
+{
+  "username" : "JeanTomines",
+  "password" : "123@test"
+}
+
 ###

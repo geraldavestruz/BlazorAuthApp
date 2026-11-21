@@ -15,8 +15,6 @@
     --color-black: #000;
     --color-white: #fff;
     --spacing: 0.25rem;
-    --text-4xl: 2.25rem;
-    --text-4xl--line-height: calc(2.5 / 2.25);
     --text-7xl: 4.5rem;
     --text-7xl--line-height: 1;
     --font-weight-bold: 700;
@@ -553,24 +551,6 @@
   .w-100 {
     width: calc(var(--spacing) * 100);
   }
-  .w-\[150\] {
-    width: 150;
-  }
-  .w-\[150px\] {
-    width: 150px;
-  }
-  .w-\[250\] {
-    width: 250;
-  }
-  .w-\[250px\] {
-    width: 250px;
-  }
-  .w-\[350px\] {
-    width: 350px;
-  }
-  .w-\[400\] {
-    width: 400;
-  }
   .w-\[450px\] {
     width: 450px;
   }
@@ -732,12 +712,6 @@
   }
   .border-gray-300 {
     border-color: var(--color-gray-300);
-  }
-  .border-gray-600 {
-    border-color: var(--color-gray-600);
-  }
-  .border-gray-700 {
-    border-color: var(--color-gray-700);
   }
   .border-white {
     border-color: var(--color-white);
