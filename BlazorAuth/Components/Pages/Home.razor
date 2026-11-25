@@ -1,7 +1,17 @@
 ﻿@page "/"
 
+
+@attribute [Authorize]
+
 <PageTitle>Home</PageTitle>
 
-<h1 class="text-7xl">Hello, world!</h1>
-
-Welcome to your new app.
+<AuthorizeView>
+    <Authorized>
+        <a href="/Account/Manage">Hello, @context.User.Identity?.Name!</a>
+        <a href="Identity/Account/User/LogOut">Log out</a>
+    </Authorized>
+    <NotAuthorized>
+        <a href="/Account/Register">Register</a>
+        <a href="/Account/User/Login">Log in</a>
+    </NotAuthorized>
+</AuthorizeView>

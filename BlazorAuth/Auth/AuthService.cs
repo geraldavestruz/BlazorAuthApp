@@ -1,27 +1,36 @@
-﻿using BlazorAuth.Auth.Interfaces;
-using BlazorAuth.ViewModels;
-
-namespace BlazorAuth.Auth
+﻿namespace BlazorAuth.Auth
 {
-    public class AuthService(
-        HttpClient http,
-        CustomAuthenticationStateProvider AuthStateProvider) : IAuthService
+    public class AuthService(HttpClient http)
     {
-        public async Task LoginUserAsync(LoginViewModel model)
+        public async Task<bool> LoginAsync(CredsRequest request)
         {
-            var response = await http.PostAsJsonAsync($"/account/user/login", model);
+            var response = await http.PostAsJsonAsync("/account/user/login", request);
 
-            if(response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<LoginResult>();
-                await AuthStateProvider.Login(result!.Username, result.Role);
-            }
+            if (!response.IsSuccessStatusCode)
+                return false;
+
+            return true;
+        }
+
+        public async Task<bool> IsUserVerified(CredsRequest request)
+        {
+            var response = await http.PostAsJsonAsync("/account/user/verify", request);
+
+            if (!response.IsSuccessStatusCode)
+                return false;
+
+            return true;
         }
     }
 
-    public class LoginResult
+    public class CredsRequest
     {
         public string Username { get; set; }
-        public int Role { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class LoginResponse
+    {
+        public string token { get; set; }
     }
 }

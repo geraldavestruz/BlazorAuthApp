@@ -6,48 +6,32 @@ namespace BlazorAuth.Auth
 {
     public class CustomAuthenticationStateProvider : AuthenticationStateProvider
     {
-        private HttpClient _http;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ProtectedSessionStorage _sessionStorage;
         private ClaimsPrincipal _Anonymous = new ClaimsPrincipal(new ClaimsIdentity());
 
-        public CustomAuthenticationStateProvider(
-            IHttpContextAccessor httpContextAccessor,
-            ProtectedSessionStorage sessionStorage,
-            HttpClient http)
+        public CustomAuthenticationStateProvider(ProtectedSessionStorage sessionStorage)
         {
-            _httpContextAccessor = httpContextAccessor;
             _sessionStorage = sessionStorage;
-            _http = http;
         }
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             try
             {
-                var httpContext = _httpContextAccessor.HttpContext;
                 var userSessionResult = await _sessionStorage.GetAsync<UserSession>("UserSession");
                 var userSession = userSessionResult.Success ? userSessionResult.Value : null;
-
-                var user = httpContext?.User;
 
                 if (userSession == null)
                     return new AuthenticationState(_Anonymous);
 
-                var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, userSession.UserName),
-                    new Claim(ClaimTypes.Name, userSession.Role)
-                }, "CustomAuth"));
-
-                return new AuthenticationState(new ClaimsPrincipal(user!));
+                var claimsPrincipal = CreateclaimsPrincipal(userSession);
+                return new AuthenticationState(claimsPrincipal);
             }
             catch
             {
-                return await Task.FromResult(new AuthenticationState(_Anonymous));
+                return new AuthenticationState(_Anonymous);
             }           
         }  
-
 
         public async Task UpdateAuthenticationState(UserSession? userSession)
         {
@@ -56,12 +40,7 @@ namespace BlazorAuth.Auth
             if(userSession != null)
             {
                 await _sessionStorage.SetAsync("UserSession", userSession);
-
-                claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                {
-                    new Claim(ClaimTypes.Name, userSession.UserName),
-                    new Claim(ClaimTypes.Role, userSession.Role.ToString())
-                }, "CustomAuth"));
+                claimsPrincipal = CreateclaimsPrincipal(userSession);
             }
             else
             {
@@ -72,15 +51,23 @@ namespace BlazorAuth.Auth
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
         }
 
-        public async Task Login(string username, int role)
+        public async Task LoginAsync(UserSession userSession)
         {
-            var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-            {
-                new(ClaimTypes.Name, username),
-                new(ClaimTypes.Role, role.ToString())
-            }, "CustomAuth"));
+            await _sessionStorage.SetAsync("UserSession", userSession);
+            var claimsPrincipal = CreateclaimsPrincipal(userSession);
 
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
+        }
+
+        private static ClaimsPrincipal CreateclaimsPrincipal(UserSession userSession)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, userSession.UserName),
+                new Claim(ClaimTypes.Name, userSession.Role)
+            };
+
+            return new ClaimsPrincipal(new ClaimsIdentity(claims, "CustomAuth"));
         }
     }
 

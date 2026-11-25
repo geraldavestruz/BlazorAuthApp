@@ -1,15 +1,16 @@
-﻿@page "/Account/Login"
+﻿@page "/Account/User/Login"
 
 @using BlazorAuth.Auth
 
-
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavManager
+@inject HttpClient http
+@inject AuthService authService
 
 @rendermode InteractiveServer
 
 <div class="mx-auto w-[450px] rounded-md border border-gray-300">
-    <EditForm Model="@LoginModel">
+    <EditForm Model="@LoginModel" OnValidSubmit="HandleLogin">
         <div class="relative px-4 py-6">
             <p class="mb-2 font-bold">Last Name</p>
             <InputText @bind-Value="LoginModel.Username"
@@ -21,23 +22,48 @@
                        typeof="text" placeholder="Password"
                        class="mb-6 w-full rounded-md border border-gray-300 px-4 py-4" />
 
-            <button type="submit" @onsubmit="HandleLogin" class="w-full cursor-pointer rounded-md bg-violet-600 px-4 py-4 text-white">Register</button>
+            <button type="submit" class="w-full cursor-pointer rounded-md bg-violet-600 px-4 py-4 text-white">Register</button>
         </div>
     </EditForm>
 </div>
 
 @code
 {
-    public LoginViewModel LoginModel { get; set; } = new LoginViewModel();
+    public CredsRequest LoginModel = new CredsRequest();
+    private bool isLoading = false;
+    private string? ErrorMessage;
 
     public async Task HandleLogin()
     {
-        var customAuth = (CustomAuthenticationStateProvider)AuthStateProvider;
-        await customAuth.UpdateAuthenticationState(new UserSession
+        isLoading = true;
+        try
         {
-            UserName = LoginModel.Username,
-            Role = "Member"
-        });
-        NavManager.NavigateTo("/Account/Login", true);
+            bool IsVerified = await authService.IsUserVerified(LoginModel);
+
+            if (IsVerified)
+            {
+                await authService.LoginAsync(LoginModel);
+
+                var session = new UserSession
+                {
+                    UserName = LoginModel.Username,
+                    Role = "Member"
+                };
+               
+                var customAuth = (CustomAuthenticationStateProvider)AuthStateProvider;
+
+                await customAuth.LoginAsync(session);
+                
+                NavManager.NavigateTo("/");
+            }     
+        }
+        catch(Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 }

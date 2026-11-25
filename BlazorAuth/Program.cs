@@ -1,5 +1,4 @@
 using BlazorAuth.Auth;
-using BlazorAuth.Auth.Interfaces;
 using BlazorAuth.Components;
 using BlazorAuth.Data;
 using BlazorAuth.Endpoints.Account;
@@ -11,10 +10,14 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddControllers().AddJsonOptions(opt =>
+    opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
@@ -22,7 +25,11 @@ builder.Services.AddHttpClient();
 
 builder.Services.AddAntiforgery();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<AuthService>();
+
+builder.Services.AddBlazoredSessionStorage();
 
 builder.Services.AddResponseCompression(opt =>
     opt.EnableForHttps = true);
@@ -47,14 +54,14 @@ builder.Services.AddIdentity<User, IdentityRole<Guid>>(opt =>
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(opt =>
     {
-        opt.Cookie.Name = "SetCookie";
+        opt.Cookie.Name = "auth_token";
         opt.Cookie.HttpOnly = true;
         opt.Cookie.SecurePolicy = CookieSecurePolicy.Always;
         opt.Cookie.SameSite = SameSiteMode.Lax;
         opt.SlidingExpiration = true;
         opt.ExpireTimeSpan = TimeSpan.FromDays(7);
-        opt.LoginPath = "/Account/Login";
-        opt.LogoutPath = "/Account/Logout";
+        opt.LoginPath = "/Account/User/Login";
+        opt.LogoutPath = "/Account/USer/Logout";
         opt.AccessDeniedPath = "/Account/AccessDenied";
 
         opt.Events.OnRedirectToLogin = (context) =>
@@ -77,7 +84,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
                     }
                 }
                 else
-                {
+                {   
                     context.RejectPrincipal();
                 }
 
@@ -86,9 +93,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         };
     });
 
-//builder.Services.AddScoped<IAuthService, AuthService>();
 
-builder.Services.AddBlazoredSessionStorage();
 
 var app = builder.Build();
 

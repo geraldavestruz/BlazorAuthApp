@@ -10,6 +10,7 @@ namespace BlazorAuth.Endpoints.Account
         {
             var user = app.MapGroup("/account/user");
             user.MapPost("/login", LoginUser);
+            user.MapPost("/verify", VerifyCredentials);
         }
 
         public static async Task<IResult> LoginUser(
@@ -28,7 +29,19 @@ namespace BlazorAuth.Endpoints.Account
             if (!result.Succeeded)
                 return Results.Unauthorized();
 
-            var roles = await userManager.GetRolesAsync(user);
+            await userManager.GetRolesAsync(user);
+
+            return Results.Ok(result);
+        }
+
+        public static async Task<IResult> VerifyCredentials(
+            [FromBody] LoginRequest verifyRequest,
+            UserManager<User> userManager)
+        {
+            var user = await userManager.FindByNameAsync(verifyRequest.Username);
+
+            if (user == null || !await userManager.CheckPasswordAsync(user, verifyRequest.Password))
+                return Results.Unauthorized();
 
             return Results.Ok();
         }
